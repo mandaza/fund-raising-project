@@ -1,0 +1,24 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      create-next-app:
+        specifier: 16.1.7
+        version: 16.1.7
+
+packages:
+
+  create-next-app@16.1.7:
+    resolution: {integrity: sha512-6K/K0oH6hOX2ZZDJJGF5t4qqY1cC/asUzPRmW3O9As59fmy1qTRg4XlmJdZcZikuBrV6FrDFeEwJt9gyyXd2Tw==}
+    engines: {node: '>=20.9.0'}
+    hasBin: true
+
+snapshots:
+
+  create-next-app@16.1.7: {}
