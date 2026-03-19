@@ -31,7 +31,7 @@ export function Input({
 }: InputProps) {
   const hasError = !!error;
 
-  const inputClasses = `w-full px-4 py-3 border rounded-lg transition-all duration-200 bg-white text-gray-900 placeholder:text-gray-500 disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed ${
+  const inputClasses = `w-full px-4 py-3 border rounded-lg transition-all duration-200 bg-white text-gray-900 placeholder:text-gray-600 disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed ${
     hasError
       ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200"
       : "border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20"

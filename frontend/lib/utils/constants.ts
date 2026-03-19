@@ -14,10 +14,10 @@ export const PRICING = {
 export const EVENT_INFO = {
   name: "MOSH Fundraising Dinner",
   tagline: "Empowering Children with Special Needs in Zimbabwe",
-  date: "2026-04-15",
+  date: "2026-03-28",
   time: "18:00",
-  venue: "Grand Hotel Ballroom",
-  address: "123 Main Street, Downtown",
+  venue: "1 Pennefather Avenue in Harare, Zimbabwe",
+  address: "1 Pennefather Avenue in Harare, Zimbabwe",
   description:
     "Join Mothers of Special Heroes (MOSH) in creating a more inclusive future for children with neurological disabilities.",
 } as const;
@@ -92,7 +92,7 @@ export const BOOKING_REFERENCE = {
 
 // Contact information
 export const CONTACT_INFO = {
-  email: "info@fundraising.org",
+  email: "info@mothersofspecialheroes.org",
   phone: "0783019160 or 0773618337 (WhatsApp)",
-  address: "123 Main Street, Downtown",
+  address: "Fidelity Life Centre, Fife Street and 11th Ave",
 } as const;

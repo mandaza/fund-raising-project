@@ -104,7 +104,7 @@ export function PaymentProofUploadForm({
               }
             }}
             disabled={isSubmitting}
-            className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed ${
+            className={`w-full px-4 py-3 border rounded-lg transition-all duration-200 bg-white text-gray-900 disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed ${
               errors.method
                 ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200"
                 : "border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -153,7 +153,7 @@ export function PaymentProofUploadForm({
               type="text"
               value={currency}
               disabled
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed"
             />
           </div>
         </div>

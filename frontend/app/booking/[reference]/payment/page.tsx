@@ -64,11 +64,11 @@ export default async function PaymentPage({ params }: PaymentPageProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Seats Reserved:</span>
-                  <span className="font-medium">{booking.seats}</span>
+                  <span className="font-medium text-gray-900">{booking.seats}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Minimum deposit:</span>
-                  <span className="font-medium">
+                  <span className="font-medium text-gray-900">
                     ${minimumDeposit} {PRICING.CURRENCY}
                   </span>
                 </div>

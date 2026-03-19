@@ -15,6 +15,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MOSH - Fundraising Dinner",
   description: "Join Mothers of Special Heroes (MOSH) in creating a more inclusive future for children with neurological disabilities.",
+  icons: {
+    icon: [
+      { url: "/favicon_ico/favicon.ico" },
+      { url: "/favicon_ico/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon_ico/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/favicon_ico/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/favicon_ico/favicon.ico"],
+  },
+  manifest: "/favicon_ico/site.webmanifest",
 };
 
 export default function RootLayout({

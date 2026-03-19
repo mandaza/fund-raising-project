@@ -35,10 +35,14 @@ export default function ReturnPage() {
     try {
       // Verify booking exists
       const trimmedRef = reference.trim().toUpperCase();
-      await getBookingByReference(trimmedRef);
+      const booking = await getBookingByReference(trimmedRef);
 
-      // Booking exists - navigate to booking page
-      router.push(`/booking/${trimmedRef}`);
+      // Navigate directly to the final destination to avoid an intermediate blank redirect page.
+      if (booking.status === "confirmed") {
+        router.push(`/booking/${trimmedRef}/confirmation`);
+      } else {
+        router.push(`/booking/${trimmedRef}/payment`);
+      }
     } catch (err) {
       if (err instanceof Error && err.message.includes("404")) {
         setError("Booking not found. Please check your reference and try again.");

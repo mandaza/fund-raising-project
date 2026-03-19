@@ -1,15 +1,16 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Container } from "@/components/layout/Container";
-import { Button } from "@/components/ui/Button";
+import { BookingActions } from "@/components/home/BookingActions";
+import { EventCountdownCard } from "@/components/home/EventCountdownCard";
 import { EVENT_INFO } from "@/lib/utils/constants";
-import { useRouter } from "next/navigation";
-import { getBookingImpactSummary } from "@/lib/api/bookings";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const IMPACT_REVALIDATE_SECONDS = 60;
+
+export const revalidate = 60;
 
 function getEventStartDate(): Date {
   const [year, month, day] = EVENT_INFO.date.split("-").map((v) => parseInt(v, 10));
@@ -17,61 +18,63 @@ function getEventStartDate(): Date {
   return new Date(year, (month ?? 1) - 1, day ?? 1, hours ?? 0, minutes ?? 0, 0, 0);
 }
 
-export default function Home() {
-  const router = useRouter();
-  const eventStart = useMemo(() => getEventStartDate(), []);
-  const [now, setNow] = useState(() => new Date());
-  const [impact, setImpact] = useState<{
-    seatsBooked: number;
-    amountRaised: number;
-    currency: string;
-  } | null>(null);
-
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    getBookingImpactSummary()
-      .then((summary) => {
-        if (cancelled) return;
-        const amountRaised = Number(summary.amount_raised);
-        setImpact({
-          seatsBooked: summary.seats_booked,
-          amountRaised: Number.isFinite(amountRaised) ? amountRaised : 0,
-          currency: summary.currency || "USD",
-        });
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setImpact(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const countdown = useMemo(() => {
-    const diffMs = eventStart.getTime() - now.getTime();
-    if (diffMs <= 0) {
-      return { isLive: true, days: 0, hours: 0, minutes: 0, seconds: 0 };
-    }
-    const totalSeconds = Math.floor(diffMs / 1000);
-    const days = Math.floor(totalSeconds / (24 * 3600));
-    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    return { isLive: false, days, hours, minutes, seconds };
-  }, [eventStart, now]);
-
-  const formattedDate = new Date(EVENT_INFO.date).toLocaleDateString("en-US", {
+function getFormattedEventDate(): string {
+  const [year, month, day] = EVENT_INFO.date.split("-").map((v) => parseInt(v, 10));
+  const utcDate = new Date(Date.UTC(year ?? 2026, (month ?? 1) - 1, day ?? 1));
+  return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  });
+    timeZone: "UTC",
+  }).format(utcDate);
+}
+
+function getMapEmbedUrl(): string {
+  return `https://maps.google.com/maps?q=${encodeURIComponent(EVENT_INFO.address)}&z=15&output=embed`;
+}
+
+interface ImpactViewModel {
+  seatsBooked: number;
+  amountRaised: number;
+  currency: string;
+}
+
+async function getHomePageImpact(): Promise<ImpactViewModel | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const response = await fetch(`${API_URL}/api/bookings/summary`, {
+      signal: controller.signal,
+      next: { revalidate: IMPACT_REVALIDATE_SECONDS },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const summary = await response.json();
+    const amountRaised = Number(summary.amount_raised);
+
+    return {
+      seatsBooked: Number(summary.seats_booked) || 0,
+      amountRaised: Number.isFinite(amountRaised) ? amountRaised : 0,
+      currency: summary.currency || "USD",
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export default async function Home() {
+  const eventStart = getEventStartDate();
+  const impact = await getHomePageImpact();
+
+  const formattedDate = getFormattedEventDate();
+  const mapEmbedUrl = getMapEmbedUrl();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,24 +91,15 @@ export default function Home() {
               Join Mothers of Special Heroes (MOSH) in creating a more inclusive future for children with neurological
               disabilities.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => router.push("/book/corporate")}
-                className="!bg-white !text-primary hover:!bg-gray-100"
-              >
-                Book Corporate Table
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => router.push("/book/individual")}
-                className="border-white text-white hover:bg-white/10"
-              >
-                Book Individual Seat
-              </Button>
-            </div>
+            <BookingActions
+              primaryHref="/book/corporate"
+              primaryLabel="Book Corporate Table"
+              secondaryHref="/book/individual"
+              secondaryLabel="Book Individual Seat"
+              className="mt-8 flex flex-col sm:flex-row gap-4 justify-center"
+              primaryClassName="!bg-white !text-primary hover:!bg-gray-100"
+              secondaryClassName="border-white text-white hover:bg-white/10"
+            />
           </div>
         </Container>
       </section>
@@ -162,82 +156,73 @@ export default function Home() {
                   <span>Your support empowers families and builds community</span>
                 </li>
               </ul>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Button size="lg" onClick={() => router.push("/book/individual")} className="w-full sm:w-auto">
-                  Book Individual Seat
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => router.push("/book/corporate")}
-                  className="w-full sm:w-auto"
-                >
-                  Book Corporate Table
-                </Button>
-              </div>
+              <BookingActions
+                primaryHref="/book/individual"
+                primaryLabel="Book Individual Seat"
+                secondaryHref="/book/corporate"
+                secondaryLabel="Book Corporate Table"
+                className="mt-8 flex flex-col sm:flex-row gap-3"
+                primaryClassName="w-full sm:w-auto"
+                secondaryClassName="w-full sm:w-auto"
+              />
             </div>
           </div>
         </Container>
       </section>
 
-      {/* Event details */}
+      {/* Countdown */}
+      <section className="py-16 bg-white">
+        <Container>
+          <div className="max-w-6xl mx-auto">
+            <EventCountdownCard eventStartIso={eventStart.toISOString()} formattedDate={formattedDate} />
+          </div>
+        </Container>
+      </section>
+
+      {/* Event location */}
       <section className="py-16 bg-white">
         <Container>
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Fundraising Dinner Event</h2>
-              <p className="text-lg text-gray-600">Join us for an evening of purpose, connection, and impact.</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Event Location</h2>
+              <p className="text-lg text-gray-600">Find the venue easily and plan your route before the dinner.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-                <p className="text-sm font-medium text-gray-900 mb-2">Countdown</p>
-                {countdown.isLive ? (
-                  <p className="text-2xl font-bold text-primary">Happening now</p>
-                ) : (
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { label: "Days", value: countdown.days },
-                      { label: "Hrs", value: countdown.hours },
-                      { label: "Min", value: countdown.minutes },
-                      { label: "Sec", value: countdown.seconds },
-                    ].map((item) => (
-                      <div
-                        key={item.label}
-                        className="rounded-xl bg-white border border-gray-200 px-3 py-2 text-center"
-                      >
-                        <div className="text-lg font-bold text-gray-900 tabular-nums">
-                          {String(item.value).padStart(2, "0")}
-                        </div>
-                        <div className="text-[11px] font-medium text-gray-600">{item.label}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <p className="text-sm text-gray-600 mt-4">{formattedDate}</p>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden">
-                <div className="relative h-36 w-full">
-                  <Image
-                    src="/dinner/dinner-2.jpg"
-                    alt={`${EVENT_INFO.venue}`}
-                    fill
-                    sizes="(min-width: 768px) 33vw, 100vw"
-                    className="object-cover"
-                    priority={false}
+            <div className="rounded-3xl overflow-hidden border border-gray-200 bg-gray-50 shadow-sm">
+              <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.8fr]">
+                <div className="min-h-[420px]">
+                  <iframe
+                    title={`Map of ${EVENT_INFO.venue}`}
+                    src={mapEmbedUrl}
+                    className="h-full min-h-[420px] w-full border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
                   />
-                  <div className="absolute inset-0 bg-primary/25" />
                 </div>
-                <div className="p-6">
-                <p className="text-sm font-medium text-gray-900 mb-2">Location</p>
-                <p className="text-gray-700">{EVENT_INFO.venue}</p>
-                <p className="text-sm text-gray-600 mt-1">{EVENT_INFO.address}</p>
+                <div className="p-8 flex flex-col justify-center">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary mb-3">Venue Details</p>
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900">{EVENT_INFO.venue}</h3>
+                  <p className="mt-3 text-base md:text-lg text-gray-600">{EVENT_INFO.address}</p>
+                  <div className="mt-6 space-y-3 text-gray-700">
+                    <p>
+                      <span className="font-semibold text-gray-900">Date:</span> {formattedDate}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-gray-900">Time:</span> {EVENT_INFO.time}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-gray-900">Dress code:</span> Smart casual
+                    </p>
+                  </div>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(EVENT_INFO.address)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-8 inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-white font-medium hover:bg-primary-dark transition-colors"
+                  >
+                    Open In Google Maps
+                  </a>
                 </div>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-                <p className="text-sm font-medium text-gray-900 mb-2">Time</p>
-                <p className="text-gray-700">{EVENT_INFO.time}</p>
-                <p className="text-sm text-gray-600 mt-1">Dress code: Smart casual</p>
               </div>
             </div>
           </div>
@@ -254,10 +239,11 @@ export default function Home() {
             <p className="text-gray-600 mb-6">
               Enter your booking reference to check your status or upload payment proof
             </p>
-            <Link href="/return">
-              <Button variant="outline" size="lg">
-                Check My Booking
-              </Button>
+            <Link
+              href="/return"
+              className="font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 inline-flex items-center justify-center border-2 border-primary text-primary hover:bg-primary/10 focus:ring-primary/30 px-8 py-4 text-lg"
+            >
+              Check My Booking
             </Link>
           </div>
         </Container>
@@ -266,21 +252,21 @@ export default function Home() {
       {/* Bottom CTA */}
       <section className="py-16">
         <Container>
-          <div className="rounded-3xl bg-primary text-white px-8 py-12 text-center shadow-sm">
+          <div className="rounded-3xl bg-[#facc5c] text-gray-900 px-8 py-12 text-center shadow-sm">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Be Part of the Change</h2>
-            <p className="text-lg text-white/90 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-800 max-w-2xl mx-auto">
               Every booking supports a child with special needs. Join MOSH and help build a more inclusive future.
             </p>
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
-              <div className="rounded-2xl bg-white/10 border border-white/15 p-6">
-                <p className="text-sm font-medium text-white/85">People booked</p>
+              <div className="rounded-2xl bg-white/50 border border-white/60 p-6">
+                <p className="text-sm font-medium text-gray-700">People booked</p>
                 <p className="mt-2 text-4xl font-bold tabular-nums">
                   {impact ? impact.seatsBooked.toLocaleString() : "—"}
                 </p>
               </div>
-              <div className="rounded-2xl bg-white/10 border border-white/15 p-6">
-                <p className="text-sm font-medium text-white/85">Raised so far</p>
+              <div className="rounded-2xl bg-white/50 border border-white/60 p-6">
+                <p className="text-sm font-medium text-gray-700">Raised so far</p>
                 <p className="mt-2 text-4xl font-bold tabular-nums">
                   {impact
                     ? `${impact.currency} ${impact.amountRaised.toLocaleString(undefined, {
@@ -291,25 +277,17 @@ export default function Home() {
                 </p>
               </div>
             </div>
+            {!impact && <p className="mt-3 text-sm text-gray-700">Live impact data is temporarily unavailable.</p>}
 
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => router.push("/book/individual")}
-                className="!bg-white !text-primary hover:!bg-gray-100"
-              >
-                Book Individual Seat
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => router.push("/book/corporate")}
-                className="border-white text-white hover:bg-white/10"
-              >
-                Book Corporate Table
-              </Button>
-            </div>
+            <BookingActions
+              primaryHref="/book/individual"
+              primaryLabel="Book Individual Seat"
+              secondaryHref="/book/corporate"
+              secondaryLabel="Book Corporate Table"
+              className="mt-8 flex flex-col sm:flex-row gap-4 justify-center"
+              primaryClassName="!bg-primary !text-white hover:!bg-primary-dark"
+              secondaryClassName="border-gray-900 text-gray-900 hover:bg-gray-900/10"
+            />
           </div>
         </Container>
       </section>

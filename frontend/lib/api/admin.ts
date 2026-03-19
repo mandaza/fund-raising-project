@@ -1,6 +1,7 @@
 "use client";
 
 import { apiRequest } from "./client";
+import { ADMIN_TOKEN_COOKIE, ADMIN_TOKEN_STORAGE_KEY } from "@/lib/auth/admin-session";
 
 export interface AdminLoginResponse {
   access_token: string;
@@ -53,19 +54,29 @@ export interface AdminBookingDetail extends AdminBookingListItem {
   payments: AdminPaymentSummary[];
 }
 
-const TOKEN_KEY = "mosh_admin_token";
+function getCookieToken(): string | null {
+  if (typeof document === "undefined") return null;
+
+  const cookies = document.cookie.split(";").map((cookie) => cookie.trim());
+  const tokenCookie = cookies.find((cookie) => cookie.startsWith(`${ADMIN_TOKEN_COOKIE}=`));
+  if (!tokenCookie) return null;
+
+  return decodeURIComponent(tokenCookie.split("=").slice(1).join("="));
+}
 
 export function getAdminToken(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+  return getCookieToken() || window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
 }
 
 export function setAdminToken(token: string) {
-  window.localStorage.setItem(TOKEN_KEY, token);
+  window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
+  document.cookie = `${ADMIN_TOKEN_COOKIE}=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
 }
 
 export function clearAdminToken() {
-  window.localStorage.removeItem(TOKEN_KEY);
+  window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+  document.cookie = `${ADMIN_TOKEN_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
 }
 
 function withAuth(options: RequestInit = {}): RequestInit {

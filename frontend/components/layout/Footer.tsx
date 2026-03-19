@@ -3,6 +3,14 @@ import { EVENT_INFO, CONTACT_INFO } from "@/lib/utils/constants";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [year, month, day] = EVENT_INFO.date.split("-").map((v) => parseInt(v, 10));
+  const formattedEventDate = new Intl.DateTimeFormat("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year ?? currentYear, (month ?? 1) - 1, day ?? 1)));
 
   return (
     <footer className="bg-gray-900 text-gray-300 mt-16">
@@ -36,13 +44,7 @@ export function Footer() {
             <h3 className="text-white font-bold text-lg mb-4">Event Details</h3>
             <div className="space-y-2 text-sm">
               <p>
-                <span className="font-medium">Date:</span>{" "}
-                {new Date(EVENT_INFO.date).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                <span className="font-medium">Date:</span> {formattedEventDate}
               </p>
               <p>
                 <span className="font-medium">Time:</span> {EVENT_INFO.time}
@@ -55,7 +57,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; {currentYear} Fundraising Committee. All rights reserved.</p>
+          <p>&copy; {currentYear} Agnovat Technologies Pty Ltd. All rights reserved.</p>
         </div>
       </div>
     </footer>
