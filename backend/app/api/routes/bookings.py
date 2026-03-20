@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, UploadFile
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -19,6 +19,7 @@ from app.schemas.booking import (
 from app.schemas.payment_proof import PaymentProofRead
 from app.schemas.public_summary import BookingImpactSummary
 from app.services.bookings import create_corporate_booking, create_individual_booking, get_booking_by_reference
+from app.services.notifications import send_booking_created_notifications_by_id
 from app.services.payment_proofs import upload_payment_proof_for_booking
 
 
@@ -50,23 +51,33 @@ def booking_impact_summary(db: Session = Depends(get_db)) -> BookingImpactSummar
 
 
 @router.post("/corporate", response_model=BookingRead)
-def create_corporate_booking_route(payload: CorporateBookingCreateRequest, db: Session = Depends(get_db)) -> BookingRead:
+def create_corporate_booking_route(
+    payload: CorporateBookingCreateRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+) -> BookingRead:
     booking = create_corporate_booking(
         db=db,
         guest_in=payload.guest,
         tables=payload.tables,
         notes=payload.notes,
     )
+    background_tasks.add_task(send_booking_created_notifications_by_id, booking_id=booking.id)
     return BookingRead.model_validate(booking)
 
 
 @router.post("/individual", response_model=BookingRead)
-def create_individual_booking_route(payload: IndividualBookingCreateRequest, db: Session = Depends(get_db)) -> BookingRead:
+def create_individual_booking_route(
+    payload: IndividualBookingCreateRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+) -> BookingRead:
     booking = create_individual_booking(
         db=db,
         guest_in=payload.guest,
         notes=payload.notes,
     )
+    background_tasks.add_task(send_booking_created_notifications_by_id, booking_id=booking.id)
     return BookingRead.model_validate(booking)
 
 

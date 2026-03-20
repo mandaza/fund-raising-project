@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Container } from "@/components/layout/Container";
+import { BookingLookupErrorState } from "@/components/display/BookingLookupErrorState";
 import { getBookingByReference } from "@/lib/api/bookings";
 import { APIError } from "@/lib/api/client";
 
@@ -30,7 +34,17 @@ export default async function BookingPage({ params }: BookingPageProps) {
     if (error instanceof APIError && error.status === 404) {
       notFound();
     }
-    // Re-throw other errors to show proper error page
-    throw error;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <section className="py-12">
+          <Container size="md">
+            <BookingLookupErrorState reference={reference} retryHref={`/booking/${reference}`} />
+          </Container>
+        </section>
+        <Footer />
+      </div>
+    );
   }
 }

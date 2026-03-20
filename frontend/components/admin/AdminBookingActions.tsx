@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { adminApprovePayment, adminRejectPayment, clearAdminToken } from "@/lib/api/admin";
@@ -18,7 +19,11 @@ export function AdminBookingActions({ paymentId }: AdminBookingActionsProps) {
   const [rejectReason, setRejectReason] = useState("");
 
   if (!paymentId) {
-    return <p className="text-gray-600">No pending proof available to preview.</p>;
+    return (
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+        No pending proof is available to review right now.
+      </div>
+    );
   }
 
   const handleAuthError = (error: unknown) => {
@@ -73,17 +78,23 @@ export function AdminBookingActions({ paymentId }: AdminBookingActionsProps) {
       {error && <Alert type="error" message={error} dismissible onClose={() => setError(null)} />}
 
       <div className="grid grid-cols-1 gap-3">
-        <Button onClick={onApprove} loading={actionLoading === "approve"} disabled={actionLoading !== null}>
+        <Button
+          onClick={onApprove}
+          loading={actionLoading === "approve"}
+          disabled={actionLoading !== null}
+          className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+        >
+          <CheckCircle2 className="h-4 w-4" />
           Approve payment
         </Button>
 
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-          <label className="block text-sm font-medium text-gray-900 mb-2">Reject reason</label>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <label className="mb-2 block text-sm font-medium text-slate-900">Reject reason</label>
           <textarea
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="Explain why this proof is rejected..."
           />
           <div className="mt-3">
@@ -92,8 +103,9 @@ export function AdminBookingActions({ paymentId }: AdminBookingActionsProps) {
               onClick={onReject}
               loading={actionLoading === "reject"}
               disabled={actionLoading !== null}
-              className="w-full"
+              className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50"
             >
+              <XCircle className="h-4 w-4" />
               Reject payment
             </Button>
           </div>

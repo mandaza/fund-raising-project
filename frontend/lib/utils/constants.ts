@@ -14,7 +14,7 @@ export const PRICING = {
 export const EVENT_INFO = {
   name: "MOSH Fundraising Dinner",
   tagline: "Empowering Children with Special Needs in Zimbabwe",
-  date: "2026-03-28",
+  date: "2026-04-03",
   time: "18:00",
   venue: "1 Pennefather Avenue in Harare, Zimbabwe",
   address: "1 Pennefather Avenue in Harare, Zimbabwe",

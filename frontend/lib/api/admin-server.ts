@@ -1,59 +1,10 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { ADMIN_TOKEN_COOKIE } from "@/lib/auth/admin-session";
+import { AdminBookingDetailViewModel, AdminOverviewViewModel } from "@/lib/types/admin";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-export interface AdminOverviewViewModel {
-  seatsBooked: number;
-  amountRaised: number;
-  currency: string;
-  pendingBookings: number;
-  confirmedBookings: number;
-  bookings: Array<{
-    id: string;
-    reference: string;
-    seats: number;
-    status: string;
-    created_at: string;
-    guest?: {
-      full_name?: string | null;
-      guest_type?: string | null;
-    } | null;
-  }>;
-}
-
-export interface AdminBookingDetailViewModel {
-  id: string;
-  reference: string;
-  status: string;
-  seats: number;
-  notes: string | null;
-  created_at: string;
-  guest?: {
-    full_name?: string | null;
-    email?: string | null;
-    phone?: string | null;
-    guest_type?: string | null;
-  } | null;
-  payments: Array<{
-    id: string;
-    method: string;
-    amount: string;
-    currency: string;
-    paid_at: string | null;
-    created_at: string;
-    proofs: Array<{
-      id: string;
-      file_path: string;
-      original_filename: string | null;
-      content_type: string | null;
-      verification_status: string;
-      rejection_reason: string | null;
-      created_at: string;
-    }>;
-  }>;
-}
+const ADMIN_REQUEST_TIMEOUT_MS = 10000;
 
 export async function getAdminAccessToken(): Promise<string> {
   const cookieStore = await cookies();
@@ -72,7 +23,7 @@ export async function getAdminOverviewServer(limit: number = 20): Promise<{
 }> {
   const token = await getAdminAccessToken();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+  const timeout = setTimeout(() => controller.abort(), ADMIN_REQUEST_TIMEOUT_MS);
 
   try {
     const response = await fetch(`${API_URL}/api/admin/overview?limit=${limit}`, {
@@ -131,7 +82,7 @@ export async function getAdminBookingServer(reference: string): Promise<{
 }> {
   const token = await getAdminAccessToken();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+  const timeout = setTimeout(() => controller.abort(), ADMIN_REQUEST_TIMEOUT_MS);
 
   try {
     const response = await fetch(`${API_URL}/api/admin/bookings/${reference}`, {

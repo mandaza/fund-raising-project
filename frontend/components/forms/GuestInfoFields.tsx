@@ -48,7 +48,7 @@ export function GuestInfoFields({ formData, onChange, errors, disabled = false }
         value={formData.phone}
         onChange={(value) => onChange("phone", value)}
         error={errors.phone}
-        placeholder="+1 (555) 123-4567"
+        placeholder="+273 7x xxx xxxx"
         helpText="Optional - We may contact you for booking updates"
         disabled={disabled}
       />

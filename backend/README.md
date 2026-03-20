@@ -54,3 +54,22 @@ If you cannot connect to Supabase from your current network (timeouts), you can 
 - For MVP we’ll use a simple **admin login** that issues a JWT access token.
 - Payment gateways (Visa/EcoCash) will be integrated later via **webhooks** (TODOs are marked in code).
 
+### Notifications (MVP)
+
+Booking notifications are triggered from the backend service layer:
+- when a guest submits a booking
+- when admin approves payment and the booking becomes confirmed
+
+Environment variables for Google SMTP email and optional Twilio SMS/WhatsApp are documented in `.env.example`.
+Set `NOTIFICATIONS_ENABLED="true"` plus the channel-specific flags you want to use:
+- `EMAIL_ENABLED`
+- `SMS_ENABLED`
+- `WHATSAPP_ENABLED`
+
+For Gmail, use an App Password rather than your normal account password:
+- `SMTP_HOST="smtp.gmail.com"`
+- `SMTP_PORT="587"`
+- `SMTP_USERNAME="your-gmail@gmail.com"`
+- `SMTP_PASSWORD="<google-app-password>"`
+- `SMTP_USE_TLS="true"`
+

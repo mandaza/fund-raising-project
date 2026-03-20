@@ -1,5 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const DEFAULT_REQUEST_TIMEOUT_MS = 8000;
+const DEFAULT_REQUEST_TIMEOUT_MS = 15000;
 
 export class APIError extends Error {
   constructor(

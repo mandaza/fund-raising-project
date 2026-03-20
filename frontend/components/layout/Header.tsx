@@ -45,16 +45,10 @@ export function Header() {
               Home
             </Link>
             <Link
-              href="/book/corporate"
+              href="/book"
               className="text-gray-700 hover:text-primary font-medium transition-colors"
             >
-              Book Corporate
-            </Link>
-            <Link
-              href="/book/individual"
-              className="text-gray-700 hover:text-primary font-medium transition-colors"
-            >
-              Book Individual
+              Book Now
             </Link>
             <Link
               href="/return"
@@ -112,18 +106,11 @@ export function Header() {
               Home
             </Link>
             <Link
-              href="/book/corporate"
+              href="/book"
               className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Book Corporate
-            </Link>
-            <Link
-              href="/book/individual"
-              className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Book Individual
+              Book Now
             </Link>
             <Link
               href="/return"

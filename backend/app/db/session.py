@@ -32,7 +32,8 @@ def _normalize_database_url(raw: str) -> str | URL:
 engine = create_engine(
     _normalize_database_url(settings.database_url),
     pool_pre_ping=True,
-    connect_args={"connect_timeout": 10},
+    # Fail fast so API clients receive a clear backend response instead of timing out first.
+    connect_args={"connect_timeout": 5},
 )
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 

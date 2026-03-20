@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Container } from "@/components/layout/Container";
@@ -92,10 +91,10 @@ export default async function Home() {
               disabilities.
             </p>
             <BookingActions
-              primaryHref="/book/corporate"
-              primaryLabel="Book Corporate Table"
-              secondaryHref="/book/individual"
-              secondaryLabel="Book Individual Seat"
+              primaryHref="/book"
+              primaryLabel="Start Booking"
+              secondaryHref="/return"
+              secondaryLabel="Check My Booking"
               className="mt-8 flex flex-col sm:flex-row gap-4 justify-center"
               primaryClassName="!bg-white !text-primary hover:!bg-gray-100"
               secondaryClassName="border-white text-white hover:bg-white/10"
@@ -157,10 +156,10 @@ export default async function Home() {
                 </li>
               </ul>
               <BookingActions
-                primaryHref="/book/individual"
-                primaryLabel="Book Individual Seat"
-                secondaryHref="/book/corporate"
-                secondaryLabel="Book Corporate Table"
+                primaryHref="/book"
+                primaryLabel="Reserve Your Place"
+                secondaryHref="/return"
+                secondaryLabel="Check My Booking"
                 className="mt-8 flex flex-col sm:flex-row gap-3"
                 primaryClassName="w-full sm:w-auto"
                 secondaryClassName="w-full sm:w-auto"
@@ -280,10 +279,10 @@ export default async function Home() {
             {!impact && <p className="mt-3 text-sm text-gray-700">Live impact data is temporarily unavailable.</p>}
 
             <BookingActions
-              primaryHref="/book/individual"
-              primaryLabel="Book Individual Seat"
-              secondaryHref="/book/corporate"
-              secondaryLabel="Book Corporate Table"
+              primaryHref="/book"
+              primaryLabel="Start Booking"
+              secondaryHref="/return"
+              secondaryLabel="Check My Booking"
               className="mt-8 flex flex-col sm:flex-row gap-4 justify-center"
               primaryClassName="!bg-primary !text-white hover:!bg-primary-dark"
               secondaryClassName="border-gray-900 text-gray-900 hover:bg-gray-900/10"

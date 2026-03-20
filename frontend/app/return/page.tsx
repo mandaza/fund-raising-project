@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
@@ -9,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { APIError } from "@/lib/api/client";
 import { validateBookingReference } from "@/lib/utils/validation";
 import { getBookingByReference } from "@/lib/api/bookings";
 import { BOOKING_REFERENCE } from "@/lib/utils/constants";
@@ -44,8 +46,10 @@ export default function ReturnPage() {
         router.push(`/booking/${trimmedRef}/payment`);
       }
     } catch (err) {
-      if (err instanceof Error && err.message.includes("404")) {
+      if (err instanceof APIError && err.status === 404) {
         setError("Booking not found. Please check your reference and try again.");
+      } else if (err instanceof APIError && (err.status === 0 || err.status >= 500)) {
+        setError("The booking service is temporarily unavailable. Please try again shortly.");
       } else {
         setError("An error occurred. Please try again.");
       }
@@ -104,10 +108,10 @@ export default function ReturnPage() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have a booking yet?{" "}
-                <a href="/" className="text-primary hover:text-primary-dark font-medium">
+                Don&apos;t have a booking yet?{" "}
+                <Link href="/" className="text-primary hover:text-primary-dark font-medium">
                   Book now
-                </a>
+                </Link>
               </p>
             </div>
           </Card>

@@ -7,8 +7,10 @@ import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { BookingReference } from "@/components/display/BookingReference";
+import { BookingLookupErrorState } from "@/components/display/BookingLookupErrorState";
 import { PaymentMethodCard } from "@/components/display/PaymentMethodCard";
 import { getBookingByReference } from "@/lib/api/bookings";
+import { APIError } from "@/lib/api/client";
 import { PAYMENT_METHODS, PRICING } from "@/lib/utils/constants";
 
 interface PaymentPageProps {
@@ -22,7 +24,21 @@ export default async function PaymentPage({ params }: PaymentPageProps) {
   try {
     booking = await getBookingByReference(reference);
   } catch (error) {
-    notFound();
+    if (error instanceof APIError && error.status === 404) {
+      notFound();
+    }
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <section className="py-12">
+          <Container size="md">
+            <BookingLookupErrorState reference={reference} retryHref={`/booking/${reference}/payment`} />
+          </Container>
+        </section>
+        <Footer />
+      </div>
+    );
   }
 
   if (!booking) {

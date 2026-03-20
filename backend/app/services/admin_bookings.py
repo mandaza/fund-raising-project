@@ -10,6 +10,7 @@ from app.models.booking import Booking
 from app.models.enums import BookingStatus, GuestType, ProofVerificationStatus
 from app.models.payment import Payment
 from app.models.payment_proof import PaymentProof
+from app.services.notifications import send_booking_confirmed_notifications
 
 
 def list_bookings(
@@ -88,6 +89,7 @@ def approve_payment(*, db: Session, payment_id, admin_id=None) -> PaymentProof:
 
     db.commit()
     db.refresh(proof)
+    send_booking_confirmed_notifications(db=db, booking=booking)
     return proof
 
 
